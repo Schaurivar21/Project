@@ -11,40 +11,27 @@ from datetime import datetime
 
 # Import Data Set
 total_df = pd.read_csv("paris_dataset.csv", index_col=0)
-total_df.set_index('DateTime', inplace=True)                     
+total_df.set_index('DateTime', inplace=True)       
+
+"""_____________________________________Feature Engineering____________________________"""
 
 
-"""_____________________________________Test/Train Dataset split ____________________________"""
 
-#Function to Split dataset into train and test set
-def split_dataset(dataset, split_factor):
-    train_size = int(len(dataset) * split_factor)
-    test_size = len(dataset) - train_size
-    train, test = dataset.iloc[0:train_size], dataset.iloc[train_size:len(dataset)]
-    print(len(train), len(test))
-    return train , test
 
-#Split Dataset
-dataset = total_df
-split_factor = 0.95
-train , test = split_dataset(dataset ,split_factor)
+#Feature Scaling of independent Variables
+from sklearn.preprocessing import MinMaxScaler
+iv_columns = ['outdoor_humidity', 'outdoor_temperature', 'wind_speed',
+                      'App-1', 'App-2', 'App-3']
+iv_transformer = MinMaxScaler(feature_range= (0,1))
+iv_transformer = iv_transformer.fit(total_df[iv_columns].to_numpy())
+total_df[iv_columns] = iv_transformer.transform(total_df[iv_columns].to_numpy())
 
-"""_____________________________________Look back Function for Single Output______________________"""
+#Feature Scaling of Dependent Variables
+dv_columns = ['Units']
+dv_transformer = MinMaxScaler(feature_range= (0,1))
+dv_transformer = dv_transformer.fit(total_df[dv_columns])
+total_df[dv_columns] = dv_transformer.transform(total_df[dv_columns])              
 
-#Look Back function
-def create_dataset(X, y, time_steps=1):
-    Xs, ys = [], []
-    for i in range(len(X) - time_steps):
-        v = X.iloc[i:(i + time_steps)].values
-        Xs.append(v)
-        ys.append(y.iloc[i + time_steps])
-    return np.array(Xs), np.array(ys)
-
-time_steps = 24*5
-# reshape to [samples, time_steps, n_features]
-X_train, y_train = create_dataset(train, train.Units, time_steps )
-X_test , y_test  = create_dataset(test , test.Units , time_steps )
-print(X_train.shape, y_train.shape)
 
 
 
@@ -62,6 +49,11 @@ def split_dataset(dataset, split_factor):
 dataset = total_df
 split_factor = 0.95
 train , test = split_dataset(dataset ,split_factor)
+
+
+
+
+
 
 """_____________________________________Look back Function for Single Output______________________"""
 
@@ -119,7 +111,7 @@ regressor.summary()
 
 
 #Fitting the RNN to the training set
-history = regressor.fit(X_train , y_train ,batch_size = 72 ,  
+history = regressor.fit(X_train , y_train ,batch_size = 120 ,  
                         epochs = 3, validation_split=0.1, shuffle=False)
 
 
