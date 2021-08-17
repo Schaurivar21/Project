@@ -59,6 +59,8 @@ dataset = dataset.resample('H', on ='DateTime').mean()
 dataset = dataset.reset_index()
 
 
+
+
 #Adding weather data
 weather = pd.read_csv("weathernational_data.csv",infer_datetime_format=True, 
                      low_memory=False,parse_dates={'datetime':[0]},index_col=['datetime'])
@@ -108,6 +110,9 @@ total_df['DayofWeek'] = total_df['DateTime'].dt.dayofweek
 #Setting Indexing
 total_df = total_df.set_index('DateTime')
 
+total_df['Units'] = total_df['Units']*(1000/60)
+total_df = total_df.reset_index()
+total_df.to_csv("paris_dataset_plotting.csv")
 
 #Saving Dataset Before feature engineering
 #total_df.to_csv("paris_dataset_before_feature_engineering.csv")
@@ -313,10 +318,6 @@ plt.xlabel('Time')
 plt.ylabel('Units')
 plt.legend()
 plt.show()
-
-
-
-
 
 
 
